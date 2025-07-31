@@ -98,17 +98,18 @@
 //   );
 // }
 
+'use client';
 
-"use client";
-
+import { Suspense } from 'react';
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { searchProducts } from "@/firebase/products";
 import Link from "next/link";
 import Image from "next/image";
+
 export const dynamic = 'force-dynamic';
 
-export default function SearchPage() {
+function SearchContent() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
@@ -125,7 +126,6 @@ export default function SearchPage() {
         setLoading(false);
       });
 
-      // Save to local storage history
       const prev = JSON.parse(localStorage.getItem("searchHistory") || "[]");
       const updated = [query, ...prev.filter((q) => q !== query)].slice(0, 5);
       localStorage.setItem("searchHistory", JSON.stringify(updated));
@@ -163,30 +163,30 @@ export default function SearchPage() {
             <p className="text-center text-gray-600">No products found.</p>
           ) : (
             <>
-                   {history.length > 0 && (
-        <div className="mt-10">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Recent Searches</h3>
-            <button
-              onClick={handleClearHistory}
-              className="text-sm text-red-500 hover:underline"
-            >
-              Clear History
-            </button>
-          </div>
-          <ul className="flex flex-wrap gap-2">
-            {history.map((item, idx) => (
-              <Link
-                key={idx}
-                href={`/search?query=${encodeURIComponent(item)}`}
-                className="bg-gray-200 px-3 py-1 rounded-full text-sm hover:bg-gray-300"
-              >
-                {item}
-              </Link>
-            ))}
-          </ul>
-        </div>
-      )}
+              {history.length > 0 && (
+                <div className="mt-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-lg font-semibold">Recent Searches</h3>
+                    <button
+                      onClick={handleClearHistory}
+                      className="text-sm text-red-500 hover:underline"
+                    >
+                      Clear History
+                    </button>
+                  </div>
+                  <ul className="flex flex-wrap gap-2">
+                    {history.map((item, idx) => (
+                      <Link
+                        key={idx}
+                        href={`/search?query=${encodeURIComponent(item)}`}
+                        className="bg-gray-200 px-3 py-1 rounded-full text-sm hover:bg-gray-300"
+                      >
+                        {item}
+                      </Link>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {visibleProducts.map((product) => (
@@ -225,8 +225,14 @@ export default function SearchPage() {
           )}
         </>
       )}
-
-
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="text-center mt-10 text-gray-500">Loading Search...</div>}>
+      <SearchContent />
+    </Suspense>
   );
 }
