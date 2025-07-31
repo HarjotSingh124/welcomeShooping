@@ -6,6 +6,7 @@
 // import Link from "next/link";
 // import Image from "next/image";
 
+
 // export default function SearchPage() {
 //   const [products, setProducts] = useState([]);
 //   const [loading, setLoading] = useState(false);
@@ -105,6 +106,7 @@ import { useEffect, useState } from "react";
 import { searchProducts } from "@/firebase/products";
 import Link from "next/link";
 import Image from "next/image";
+export const dynamic = 'force-dynamic';
 
 export default function SearchPage() {
   const [products, setProducts] = useState([]);
