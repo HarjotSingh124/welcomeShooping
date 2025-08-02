@@ -24,7 +24,7 @@ export const openRazorpayPayment = async ({ key, amount, user, onSuccess }) => {
     key: 'rzp_test_zoiBCtMTQU3kPx', // Razorpay Key ID
     amount: amount * 100, // Amount in paise
     currency: 'INR',
-    name: 'Harjot Store',
+    name: 'Welcome Shopping',
     description: 'Order Payment',
     handler: function (response) {
       console.log('Payment Successful:', response);

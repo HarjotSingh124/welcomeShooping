@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 'use client';
 export const dynamic = 'force-dynamic';
+=======
+
+"use client";
+>>>>>>> 03b2566 (Updated pages and added admin orders panel)
 
 import { Suspense } from 'react';
 import { useSearchParams } from "next/navigation";
@@ -9,7 +14,11 @@ import Link from "next/link";
 import Image from "next/image";
 
 
+<<<<<<< HEAD
 function SearchContent() {
+=======
+export default function SearchPage() {
+>>>>>>> 03b2566 (Updated pages and added admin orders panel)
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
