@@ -1,33 +1,3 @@
-// "use client";
-// import { useEffect, useState } from "react";
-// import { fetchProductsByCategory } from "@/firebase/products";
-// import ProductCard from "./ProductCard";
-
-// export default function ProductRow({ title, category, limit }) {
-//   const [products, setProducts] = useState([]);
-
-//   useEffect(() => {
-//     fetchProductsByCategory(category, limit).then(setProducts);
-//   }, [category, limit]);
-
-//   return (
-//     <div>
-//   <h2 className="bg- text-2xl font-semibold mb-4 border-b pb-2 flex items-center gap-2">
-//     {title}</h2>
-//       <div className="flex gap-4 overflow-x-auto scrollbar-hide">
-//         {products.length > 0 ? (
-//           products.map((product) => (
-//             <div key={product.id} className="min-w-[200px]">
-//               <ProductCard product={product} />
-//             </div>
-//           ))
-//         ) : (
-//           <p className="text-gray-500">No products found.</p>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
 
 "use client";
 

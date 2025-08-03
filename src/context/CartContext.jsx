@@ -99,6 +99,8 @@
 
 "use client";
 
+import Toast from "@/components/Toast";  // Import the Toast component we created earlier
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -116,7 +118,10 @@ import {
   removeFromCartDB,
   updateCartQuantity,
 } from "@/firebase/cart";
+// /context/CartIconContext.js
 
+
+export const CartIconContext = createContext(null);
 // 1. Create Context
 const CartContext = createContext();
 
@@ -129,6 +134,13 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [saved, setSaved] = useState([]);
   const [loading, setLoading] = useState(true);
+    const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+   const showCartToast = (msg) => {
+    setToastMessage(msg);
+    setShowToast(true);
+  };
+
 
   // Fetch Saved Items
   const fetchSavedItems = async (uid) => {
@@ -160,6 +172,8 @@ export const CartProvider = ({ children }) => {
     await addToCartDB(user.uid, product);
     const updated = await getCartItems(user.uid);
     setCart(updated);
+
+        showCartToast(`${product.title} added to cart 🛒`);
   };
 
   // Remove from Cart
@@ -222,6 +236,14 @@ export const CartProvider = ({ children }) => {
       }}
     >
       {children}
+         {/* Toast Component */}
+      <Toast
+        message={toastMessage}
+        visible={showToast}
+        onClose={() => setShowToast(false)}
+      />
     </CartContext.Provider>
   );
 };
+
+

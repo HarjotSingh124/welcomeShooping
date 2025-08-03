@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { app } from "@/firebase/config";
 import ProductCard from "@/components/ProductCard";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 export default function CategoryPage() {
   const params = useParams();
@@ -41,7 +42,7 @@ export default function CategoryPage() {
       </h1>
 
       {loading ? (
-        <p className="text-gray-500">Loading...</p>
+        <SkeletonLoader type="productDetail" count={5} />
       ) : products.length === 0 ? (
         <p className="text-gray-500">No products found in this category.</p>
       ) : (

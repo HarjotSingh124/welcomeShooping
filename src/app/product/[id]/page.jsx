@@ -289,6 +289,7 @@ import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import ProductCard from "@/components/ProductCard";
 import DOMPurify from "isomorphic-dompurify";
+import SkeletonLoader from "@/components/SkeletonLoader"; // New Loader Component
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -320,7 +321,7 @@ export default function ProductDetailPage() {
     fetchProduct();
   }, [id]);
 
-  if (!product) return <div className="p-10">Loading...</div>;
+  if (!product) return <SkeletonLoader type="productDetail" count={2} />;
 
   const cleanHTML = DOMPurify.sanitize(product.description || "");
 

@@ -149,14 +149,19 @@ export default function ViewOrderPage() {
       </div>
 
       {/* Address */}
-      {order.items[0]?.address && (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Delivery Address</h2>
-          <div className="border p-3 rounded text-sm">
-            {order.items[0].address}
-          </div>
-        </div>
-      )}
+    {order.items[0]?.address && (
+  <div className="mb-6">
+    <h2 className="text-lg font-semibold mb-2">Delivery Address</h2>
+    <div className="border p-3 rounded text-sm space-y-1">
+      <div><span className="font-medium">Name:</span> {order.items[0].address.name}</div>
+      <div><span className="font-medium">Phone:</span> {order.items[0].address.phone}</div>
+      <div><span className="font-medium">Address:</span> {order.items[0].address.address}</div>
+      <div><span className="font-medium">City:</span> {order.items[0].address.city}</div>
+      <div><span className="font-medium">State:</span> {order.items[0].address.state}</div>
+      <div><span className="font-medium">Pincode:</span> {order.items[0].address.pincode}</div>
+    </div>
+  </div>
+)}
 
       {/* Ordered Items */}
       <h2 className="text-xl font-semibold mb-4">Items in this Order</h2>
