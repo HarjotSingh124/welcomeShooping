@@ -93,12 +93,16 @@ import ProductRow from "@/components/ProductRow";
 import HeroCarousel from "@/components/HeroCarousel";
 import CategoryGrid from "@/components/CategoryGrid";
 import BannerSection from "@/components/BannerSection";
+import { useAuth } from "@/context/AuthContext"; // Import Auth Context
+import { useRouter } from "next/navigation"; // Use Next.js router for navigation
 import SkeletonLoader from "@/components/SkeletonLoader"; // New Loader Component
 
 export default function HomePage() {
   const [sections, setSections] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+    const { user } = useAuth();
 
   useEffect(() => {
     const loadSections = async () => {

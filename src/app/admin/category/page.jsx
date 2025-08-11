@@ -5,10 +5,17 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { useParams } from 'next/navigation';
+import { useAuth } from "@/context/AuthContext";
+import { redirect } from 'next/navigation';
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState([]);
+    const { user } = useAuth();
+  
 
+    if (!user || user.email !== "shoppingwelcome17@gmail.com") {
+      redirect("/");
+    }
   useEffect(() => {
     const fetchCategoriesWithProductCount = async () => {
       const snapshot = await getDocs(collection(db, 'categories'));
@@ -31,9 +38,9 @@ export default function AdminCategoriesPage() {
   }, []);
 
   return (
-    <div className="p-6">
+   <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Categories</h1>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="divide-y border rounded-md">
         {categories.map(category => (
           <Link key={category.id} href={`/admin/products/${category.id}`}>
             <div className="border rounded p-4 shadow cursor-pointer hover:bg-gray-100">
@@ -46,3 +53,4 @@ export default function AdminCategoriesPage() {
     </div>
   );
 }
+

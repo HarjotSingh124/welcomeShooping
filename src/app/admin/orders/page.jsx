@@ -120,11 +120,17 @@ import { useEffect, useState } from 'react';
 import { db } from '@/firebase/config';
 import { collectionGroup, getDocs, doc, updateDoc } from 'firebase/firestore';
 import SkeletonLoader from "@/components/SkeletonLoader";
+import { useAuth } from "@/context/AuthContext";
+import { redirect } from 'next/navigation';
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('pending');
+  const { user } = useAuth();
+   if (!user || user.email !== "shoppingwelcome17@gmail.com") {
+        redirect("/");
+      }
 
   useEffect(() => {
     const fetchOrders = async () => {

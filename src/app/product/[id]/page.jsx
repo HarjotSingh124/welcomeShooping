@@ -188,7 +188,7 @@
 
 //   if (!product) return <div className="p-10 text-center text-gray-500">Loading product...</div>;
 
-//   const cleanDescription = DOMPurify.sanitize(product.description || product.bodyHtml || "");
+  // const cleanDescription = DOMPurify.sanitize(product.description || product.bodyHtml || "");
 
 //   return (
 //     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -282,7 +282,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getFirestore, doc, getDoc, collectionGroup, query, where, getDocs } from "firebase/firestore";
 import { app } from "@/firebase/config";
 import Image from "next/image";
@@ -293,6 +293,7 @@ import SkeletonLoader from "@/components/SkeletonLoader"; // New Loader Componen
 
 export default function ProductDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
   const db = getFirestore(app);
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -360,8 +361,14 @@ export default function ProductDetailPage() {
               className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 font-semibold rounded"
             >
               Add to Cart
-            </button>
-            <button className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 font-semibold rounded">
+            </button >
+            <button
+              onClick={() => {
+                addToCart(product);
+                router.push(`/cart`);
+              }}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 font-semibold rounded"
+            >
               Buy Now
             </button>
           </div>

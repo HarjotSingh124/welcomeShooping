@@ -118,6 +118,7 @@ import {
   removeFromCartDB,
   updateCartQuantity,
 } from "@/firebase/cart";
+import { useRouter } from "next/navigation";  // Use Next.js router for navigation
 // /context/CartIconContext.js
 
 
@@ -133,6 +134,7 @@ export const CartProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [cart, setCart] = useState([]);
   const [saved, setSaved] = useState([]);
+    const router = useRouter();
   const [loading, setLoading] = useState(true);
     const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
@@ -168,12 +170,15 @@ export const CartProvider = ({ children }) => {
 
   // Add to Cart
   const addToCart = async (product) => {
-    if (!user) return alert("Please login to add to cart");
+    if (!user) {
+      router.push("/login");
+      return alert("Please login to add to cart");
+    }
     await addToCartDB(user.uid, product);
     const updated = await getCartItems(user.uid);
     setCart(updated);
 
-        showCartToast(`${product.title} added to cart 🛒`);
+    showCartToast(`${product.title} added to cart 🛒`);
   };
 
   // Remove from Cart
