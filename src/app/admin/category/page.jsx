@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
-import { useParams } from 'next/navigation';
 import { useAuth } from "@/context/AuthContext";
 import { redirect } from 'next/navigation';
 
@@ -42,7 +41,7 @@ export default function AdminCategoriesPage() {
       <h1 className="text-2xl font-bold mb-4">Categories</h1>
       <div className="divide-y border rounded-md">
         {categories.map(category => (
-          <Link key={category.id} href={`/admin/products/${category.id}`}>
+          <Link key={category.id} href={`/admin/products/${encodeURIComponent(category.id)}`}>
             <div className="border rounded p-4 shadow cursor-pointer hover:bg-gray-100">
               <h2 className="font-semibold">{category.name}</h2>
               <p>{category.productCount} Products</p>

@@ -1,165 +1,3 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { useParams } from "next/navigation";
-// import { db } from "@/firebase/config";
-// import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
-
-// export default function AdminProductsPage() {
-//   const { categoryId } = useParams();
-//   const [products, setProducts] = useState([]);
-//   const [openProductId, setOpenProductId] = useState(null);
-//   const [editData, setEditData] = useState({});
-
-//   useEffect(() => {
-//     const fetchProducts = async () => {
-//       const snapshot = await getDocs(collection(db, "categories", categoryId, "products"));
-//       const data = snapshot.docs.map(doc => ({
-//         id: doc.id,
-//         ...doc.data(),
-//       }));
-//       setProducts(data);
-//     };
-//     fetchProducts();
-//   }, [categoryId]);
-
-//   const handleEditToggle = (product) => {
-//     if (openProductId === product.id) {
-//       setOpenProductId(null);
-//     } else {
-//       setOpenProductId(product.id);
-//       setEditData({
-//         title: product.title || "",
-//         price: product.price || "",
-//         category: product.category || "",
-//         image: product.image || product.images?.[0] || "",
-//       });
-//     }
-//   };
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setEditData(prev => ({ ...prev, [name]: value }));
-//   };
-
-//   const handleSave = async (id) => {
-//     try {
-//       await updateDoc(doc(db, "categories", categoryId, "products", id), editData);
-//       setProducts(prev =>
-//         prev.map(p => (p.id === id ? { ...p, ...editData } : p))
-//       );
-//       setOpenProductId(null);
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-//   const handleDelete = async (id) => {
-//     if (confirm("Are you sure you want to delete this product?")) {
-//       await deleteDoc(doc(db, "categories", categoryId, "products", id));
-//       setProducts(prev => prev.filter(p => p.id !== id));
-//     }
-//   };
-
-//   if (!products.length) {
-//     return <p className="text-gray-500 p-6">No products found in this category.</p>;
-//   }
-
-//   return (
-//     <div className="max-w-4xl mx-auto p-8">
-//       <h1 className="text-3xl font-bold mb-8 text-gray-800">Manage Products</h1>
-
-//       <div className="space-y-6">
-//         {products.map(prod => (
-//           <div
-//             key={prod.id}
-//             className="border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200"
-//           >
-//             {/* Row layout */}
-//             <div className="flex items-center gap-6 p-5">
-              // {/* Image */}
-              // <div className="w-24 h-24 bg-gray-50 flex items-center justify-center overflow-hidden rounded-lg">
-              //   <img
-              //     src={prod.image || prod.images?.[0] || "/placeholder.png"}
-              //     alt={prod.title}
-              //     className="h-full object-contain p-2"
-              //   />
-              // </div>
-
-//               {/* Info */}
-//               <div className="flex-1">
-//                 <h3 className="text-lg font-semibold text-gray-900">{prod.title}</h3>
-//                 <p className="text-gray-600">₹{prod.price}</p>
-//                 <p className="text-sm text-gray-400">{prod.category}</p>
-//               </div>
-
-//               {/* Actions */}
-//               <div className="flex flex-col gap-2">
-//                 <button
-//                   onClick={() => handleEditToggle(prod)}
-//                   className="text-sm font-medium text-blue-600 hover:text-blue-800 transition"
-//                 >
-//                   {openProductId === prod.id ? "Cancel" : "Edit"}
-//                 </button>
-//                 <button
-//                   onClick={() => handleDelete(prod.id)}
-//                   className="text-sm font-medium text-red-600 hover:text-red-800 transition"
-//                 >
-//                   Delete
-//                 </button>
-//               </div>
-//             </div>
-
-//             {/* Edit Section */}
-//             {openProductId === prod.id && (
-//               <div className="px-5 pb-5 border-t border-gray-200 bg-gray-50">
-//                 <div className="mt-4 space-y-3">
-//                   <input
-//                     name="title"
-//                     value={editData.title}
-//                     onChange={handleChange}
-//                     className="border border-gray-300 rounded-lg p-2 w-full text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-//                     placeholder="Title"
-//                   />
-//                   <input
-//                     name="price"
-//                     value={editData.price}
-//                     onChange={handleChange}
-//                     type="number"
-//                     className="border border-gray-300 rounded-lg p-2 w-full text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-//                     placeholder="Price"
-//                   />
-//                   <input
-//                     name="category"
-//                     value={editData.category}
-//                     onChange={handleChange}
-//                     className="border border-gray-300 rounded-lg p-2 w-full text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-//                     placeholder="Category"
-//                   />
-//                   <input
-//                     name="image"
-//                     value={editData.image}
-//                     onChange={handleChange}
-//                     className="border border-gray-300 rounded-lg p-2 w-full text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-//                     placeholder="Image URL"
-//                   />
-
-//                   <button
-//                     onClick={() => handleSave(prod.id)}
-//                     className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-//                   >
-//                     Save Changes
-//                   </button>
-//                 </div>
-//               </div>
-//             )}
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -168,7 +6,8 @@ import { db } from "@/firebase/config";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 
 export default function AdminProductsPage() {
-  const { categoryId } = useParams();
+  const params = useParams();
+   const categoryId = decodeURIComponent(params.categoryId);
   const [products, setProducts] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [editData, setEditData] = useState({});
@@ -207,13 +46,15 @@ export default function AdminProductsPage() {
     setExpandedId(null);
   };
 
-  if (!products.length) {
+ if (!products.length) {
     return <p className="text-gray-500 p-6">No products found in this category.</p>;
   }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Products in Category</h1>
+      <h1 className="text-2xl font-bold mb-6">{categoryId}</h1>
+
+        <h1 className="text-2xl font-bold mb-6">Products in Category</h1>
       <div className="divide-y border rounded-md">
         {products.map((prod) => (
           <div key={prod.id} className="p-4">
