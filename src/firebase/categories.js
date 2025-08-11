@@ -1,12 +1,3 @@
-// import { app } from "./config";
-// import { collection, getDocs, getFirestore, query, where } from "firebase/firestore";
-// export const fetchCategories = async () => {
-//   const db = getFirestore(app);
-//   const snapshot = await getDocs(collection(db, "categories"));
-//   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-//     .filter(cat => cat.enabled)
-//     .sort((a, b) => a.order - b.order);
-// };
 import { app } from "./config";
 import { collection, getDocs, getFirestore,collectionGroup } from "firebase/firestore";
 
