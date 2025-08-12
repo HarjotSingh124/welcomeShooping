@@ -14,6 +14,7 @@ import {
 import { app } from "@/firebase/config";
 import * as XLSX from "xlsx";
 import Image from "next/image";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 export default function AddProductPage() {
   const { user } = useAuth();
@@ -126,6 +127,7 @@ export default function AddProductPage() {
   };
 
   return (
+
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">📦 Add New Product</h1>
 
@@ -240,5 +242,6 @@ export default function AddProductPage() {
         }
       `}</style>
     </div>
+
   );
 }

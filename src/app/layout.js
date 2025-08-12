@@ -1,16 +1,20 @@
 "use client";
-import { CartProvider } from "@/context/CartContext";
-import { AuthProvider } from "@/context/AuthContext";
-import Navbar from "@/components/Navbar";
+import { usePathname } from "next/navigation";
+import { CartProvider } from "../context/CartContext";
+import { AuthProvider } from "../context/AuthContext";
+import Navbar from "../components/Navbar";
 import "./globals.css";
 
 export default function RootLayout({ children }) {
+  const pathname = usePathname();
+  const isAdminRoute = pathname.startsWith("/admin");
+
   return (
     <html lang="en">
       <body>
         <AuthProvider>
           <CartProvider>
-            <Navbar />
+            {!isAdminRoute && <Navbar />}
             <main>{children}</main>
           </CartProvider>
         </AuthProvider>

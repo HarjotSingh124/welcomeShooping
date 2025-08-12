@@ -5,20 +5,16 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/firebase/config";
 import {
-  collection,
-  collectionGroup,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-
+  getActiveProductByHandle,
+  getReviewsByProductKey,
+  addReviewByProductKey,
+  checkStockByHandle,
+  getRelatedByCategory,
+} from "@/firebase/products";
 
 export default function ProductDetailPage() {
-  const { id } = useParams(); // product handle / id
+  const { id } = useParams(); // product handle
   const router = useRouter();
   const { addToCart } = useCart();
   const { user } = useAuth();
@@ -34,92 +30,42 @@ export default function ProductDetailPage() {
   const [newReview, setNewReview] = useState({ rating: 5, text: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  const mainImageRef = useRef(null);
-
-
-
   useEffect(() => {
     if (!id) return;
     setLoading(true);
 
     (async () => {
       try {
-        // Search product in collectionGroups "products" where handle or id matches
-        const q = query(collectionGroup(db, "products"), where("handle", "==", id));
-        const snapshot = await getDocs(q);
-
-        // fallback: maybe doc id stored as `id`
-        let prodDoc = null;
-        if (!snapshot.empty) prodDoc = snapshot.docs[0];
-        else {
-          // try match by 'id' field (some setups store handle as id or vice versa)
-          const q2 = query(collectionGroup(db, "products"), where("id", "==", id));
-          const s2 = await getDocs(q2);
-          if (!s2.empty) prodDoc = s2.docs[0];
-        }
-
-        if (!prodDoc) {
-          // Optionally: try top-level products collection
-          const q3 = query(collection(db, "products"), where("handle", "==", id));
-          const s3 = await getDocs(q3);
-          if (!s3.empty) prodDoc = s3.docs[0];
-        }
-
-        if (!prodDoc) {
-          console.error("Product not found for id:", id);
+        // get product by handle (only active returned)
+        const prod = await getActiveProductByHandle(id);
+        if (!prod) {
           setProduct(null);
           setLoading(false);
           return;
         }
-        
+        setProduct(prod);
+        setActiveImage(prod.images?.[0] || prod.image || null);
 
-        const data = { id: prodDoc.id, ...prodDoc.data() };
-        // Normalize images array
-        const images = data.images || (data.image ? [data.image] : []);
-        data.images = images;
-        setProduct(data);
-        setActiveImage(images[0] || null);
+        // reviews (top-level collection)
+        setReviewLoading(true);
+        const revs = await getReviewsByProductKey(prod.handle || prod.id);
+        setReviews(revs || []);
+        setReviewLoading(false);
 
-        // related products by category (simple fetch)
-        if (data.category) {
-          const relSnap = await getDocs(collectionGroup(db, "products"));
-          const relList = relSnap.docs
-            .map((d) => ({ id: d.id, ...d.data() }))
-            .filter((p) => p.category === data.category && (p.handle || p.id) !== id)
-            .slice(0, 8);
-          setRelated(relList);
-        }
+        // stock
+        const stock = await checkStockByHandle(prod.handle || prod.id);
+        setProduct((p) => ({ ...prod, stock }));
 
+        // related
+        const rel = await getRelatedByCategory(prod.category, 8, prod.handle || prod.id);
+        setRelated(rel);
       } catch (err) {
-        console.error("Error fetching product:", err);
+        console.error("Error loading product:", err);
       } finally {
         setLoading(false);
       }
     })();
   }, [id]);
-
-  // Fetch reviews for this product
-  useEffect(() => {
-    if (!product) return;
-    setReviewLoading(true);
-    (async () => {
-      try {
-        // collection "reviews" with field productId equals product.handle or product.id
-        const productKey = product.handle || product.id;
-        const revCol = collection(db, "reviews");
-        const q = query(revCol, where("productId", "==", productKey));
-        const snap = await getDocs(q);
-        const revs = snap.docs
-          .map((d) => ({ id: d.id, ...d.data() }))
-          .sort((a, b) => b.createdAt?.toMillis?.() - a.createdAt?.toMillis?.());
-        setReviews(revs);
-      } catch (err) {
-        console.error("Error fetching reviews:", err);
-      } finally {
-        setReviewLoading(false);
-      }
-    })();
-  }, [product]);
 
   const avgRating = useMemo(() => {
     if (!reviews || reviews.length === 0) return null;
@@ -127,10 +73,8 @@ export default function ProductDetailPage() {
     return (sum / reviews.length).toFixed(1);
   }, [reviews]);
 
-  // Add to cart
   const handleAddToCart = async () => {
     if (!product) return;
-    // Build cart item shape consistent with your cart logic
     const item = {
       id: product.id,
       handle: product.handle,
@@ -141,16 +85,14 @@ export default function ProductDetailPage() {
       stock: product.stock ?? null,
     };
     await addToCart(item);
-    // Simple visual feedback: bump qty briefly or toast (not implemented here)
+    // optionally show a toast / animation here
   };
 
-  // Buy now: add to cart (one item), navigate to checkout
   const handleBuyNow = async () => {
     await handleAddToCart();
     router.push("/checkout");
   };
 
-  // Submit review
   const submitReview = async (e) => {
     e.preventDefault();
     if (!user) return alert("Please login to add a review.");
@@ -158,18 +100,9 @@ export default function ProductDetailPage() {
     setSubmittingReview(true);
     try {
       const productKey = product.handle || product.id;
-      await addDoc(collection(db, "reviews"), {
-        productId: productKey,
-        userId: user.uid,
-        userName: user.displayName || user.email,
-        rating: Number(newReview.rating) || 5,
-        text: newReview.text.trim(),
-        createdAt: serverTimestamp(),
-      });
-      // Refresh reviews
-      const revSnap = await getDocs(query(collection(db, "reviews"), where("productId", "==", productKey)));
-      const revs = revSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setReviews(revs.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0)));
+      await addReviewByProductKey(productKey, user.uid, user.displayName || user.email, Number(newReview.rating), newReview.text.trim());
+      const revs = await getReviewsByProductKey(productKey);
+      setReviews(revs);
       setNewReview({ rating: 5, text: "" });
     } catch (err) {
       console.error("Error submitting review:", err);
@@ -179,7 +112,6 @@ export default function ProductDetailPage() {
     }
   };
 
-  // Image zoom style uses CSS - apply class to container
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto p-6">
@@ -193,41 +125,25 @@ export default function ProductDetailPage() {
   }
 
   if (!product) {
-    return <div className="max-w-4xl mx-auto p-6 text-center text-red-600">Product not found.</div>;
+    return <div className="max-w-4xl mx-auto p-6 text-center text-red-600">Product not found or inactive.</div>;
   }
 
-  const originalPrice = product.originalPrice ?? product.mrp ?? null; // try a few fields
+  const originalPrice = product.originalPrice ?? product.mrp ?? null;
   const discountedPrice = product.price;
 
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left: images */}
+        {/* Images */}
         <div className="w-full lg:w-1/2">
           <div className="bg-white border rounded p-4">
             <div className="w-full h-[420px] md:h-[520px] flex items-center justify-center overflow-hidden rounded">
-              {/* zoom on hover: wrapper */}
-              <div
-                className="relative w-full h-full overflow-hidden"
-                style={{ willChange: "transform" }}
-                ref={mainImageRef}
-              >
-                <img
-                  src={activeImage || "/placeholder.png"}
-                  alt={product.title}
-                  className="w-full h-full object-contain transform transition-transform duration-500 hover:scale-110"
-                />
-              </div>
+              <img src={activeImage || "/placeholder.png"} alt={product.title} className="w-full h-full object-contain" />
             </div>
-          
-            {/* thumbnails */}
+
             <div className="mt-3 flex gap-2 overflow-x-auto">
               {(product.images || []).map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => { setActiveImage(img); }}
-                  className={`flex-none border rounded p-1 ${activeImage === img ? "ring-2 ring-[#BEB9B1]" : ""}`}
-                >
+                <button key={idx} onClick={() => setActiveImage(img)} className={`flex-none border rounded p-1 ${activeImage === img ? "ring-2 ring-[#BEB9B1]" : ""}`}>
                   <img src={img} alt={`thumb-${idx}`} className="w-20 h-20 object-contain" />
                 </button>
               ))}
@@ -235,7 +151,7 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Right: product details */}
+        {/* Details */}
         <div className="w-full lg:w-1/2 space-y-4">
           <h1 className="text-2xl md:text-3xl font-bold">{product.title}</h1>
 
@@ -268,24 +184,16 @@ export default function ProductDetailPage() {
           <p className="text-sm text-gray-600">{product.type ? `Category: ${product.type}` : `Category: ${product.category || "N/A"}`}</p>
 
           <div className="flex items-center gap-3">
-         
+            <div className="flex items-center border rounded">
+              <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="px-3 py-2">−</button>
+              <div className="px-4 py-2">{qty}</div>
+              <button onClick={() => setQty((q) => q + 1)} className="px-3 py-2">+</button>
+            </div>
 
-            <button
-              onClick={handleAddToCart}
-              className="px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded"
-            >
-              Add to cart
-            </button>
-
-            <button
-              onClick={handleBuyNow}
-              className="px-6 py-2 bg-[#BEB9B1] hover:opacity-90 text-white font-semibold rounded"
-            >
-              Buy now
-            </button>
+            <button onClick={handleAddToCart} className="px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded">Add to cart</button>
+            <button onClick={handleBuyNow} className="px-6 py-2 bg-[#BEB9B1] hover:opacity-90 text-white font-semibold rounded">Buy now</button>
           </div>
 
-          {/* quick bullets */}
           <ul className="mt-4 text-sm list-disc list-inside text-gray-600 space-y-1">
             <li>Easy returns within 10 days</li>
             <li>Secure payment</li>
@@ -322,10 +230,12 @@ export default function ProductDetailPage() {
                   <div key={r.id} className="border-b pb-2">
                     <div className="flex justify-between items-center">
                       <div className="font-medium text-sm">{r.userName || "Anonymous"}</div>
-                      <div className="text-xs text-gray-500">{new Date(r.createdAt?.toDate ? r.createdAt.toDate() : (r.createdAt?.seconds || 0) * 1000).toLocaleDateString()}</div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(r.createdAt?.toDate ? r.createdAt.toDate() : (r.createdAt?.seconds || 0) * 1000).toLocaleDateString()}
+                      </div>
                     </div>
                     <div className="text-sm text-yellow-600">{"★".repeat(r.rating || 5)}</div>
-                    <div className="text-sm text-gray-700 mt-1">{r.text}</div>
+                    <div className="text-sm text-gray-700 mt-1">{r.text || r.comment}</div>
                   </div>
                 ))}
               </div>
@@ -334,29 +244,15 @@ export default function ProductDetailPage() {
               <div className="mt-4">
                 <h4 className="font-medium mb-2">Write a review</h4>
                 <form onSubmit={submitReview} className="space-y-2">
-                  <select
-                    value={newReview.rating}
-                    onChange={(e) => setNewReview((p) => ({ ...p, rating: e.target.value }))}
-                    className="input w-full"
-                  >
+                  <select value={newReview.rating} onChange={(e) => setNewReview((p) => ({ ...p, rating: e.target.value }))} className="input w-full">
                     <option value={5}>5 - Excellent</option>
                     <option value={4}>4 - Very good</option>
                     <option value={3}>3 - Average</option>
                     <option value={2}>2 - Poor</option>
                     <option value={1}>1 - Terrible</option>
                   </select>
-                  <textarea
-                    value={newReview.text}
-                    onChange={(e) => setNewReview((p) => ({ ...p, text: e.target.value }))}
-                    className="input w-full"
-                    rows={3}
-                    placeholder="Write about your experience..."
-                  />
-                  <button
-                    type="submit"
-                    disabled={submittingReview}
-                    className="w-full px-3 py-2 bg-[#BEB9B1] text-white rounded font-medium"
-                  >
+                  <textarea value={newReview.text} onChange={(e) => setNewReview((p) => ({ ...p, text: e.target.value }))} className="input w-full" rows={3} placeholder="Write about your experience..." />
+                  <button type="submit" disabled={submittingReview} className="w-full px-3 py-2 bg-[#BEB9B1] text-white rounded font-medium">
                     {submittingReview ? "Submitting..." : (user ? "Submit Review" : "Login to review")}
                   </button>
                 </form>
@@ -366,7 +262,7 @@ export default function ProductDetailPage() {
         </aside>
       </div>
 
-      {/* Related products */}
+      {/* Related */}
       {related.length > 0 && (
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">Related Products</h3>
@@ -384,51 +280,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
-// "use client";
-// import { useEffect, useState } from "react";
-// import { useParams } from "next/navigation";
-// import ImageGallery from "@/components/product-detail/ImageGallery";
-// import ProductInfo from "@/components/product-detail/ProductInfo";
-// import Reviews from "@/components/product-detail/Reviews";
-// import { fetchProductById, fetchReviews, addReview } from "@/firebase/products";
-
-// export default function ProductDetailPage() {
-//   const { id } = useParams();
-//   const [product, setProduct] = useState(null);
-//   const [reviews, setReviews] = useState([]);
-//   const [selectedImage, setSelectedImage] = useState("");
-
-//   useEffect(() => {
-//     (async () => {
-//       const prod = await fetchProductById(id);
-//       if (prod) {
-//         setProduct(prod);
-//         setSelectedImage(prod.images?.[0] || "");
-//         const revs = await fetchReviews(prod.id);
-//         setReviews(revs);
-//       }
-//     })();
-//   }, [id]);
-
-//   const handleReviewSubmit = async (text, rating) => {
-//     await addReview(product.id, text, rating);
-//     const updated = await fetchReviews(product.id);
-//     setReviews(updated);
-//   };
-
-//   if (!product) return <p className="p-6 text-gray-500">Loading...</p>;
-
-//   return (
-//     <div className="max-w-6xl mx-auto p-6 flex flex-col lg:flex-row gap-8">
-//       <ImageGallery
-//         images={product.images}
-//         selectedImage={selectedImage}
-//         setSelectedImage={setSelectedImage}
-//         title={product.title}
-//       />
-//       <ProductInfo product={product} />
-//       <Reviews reviews={reviews} onSubmit={handleReviewSubmit} />
-//     </div>
-//   );
-// }

@@ -9,7 +9,7 @@ const db = getFirestore(app);
 
 export const addToCartDB = async (userId, product) => {
   const cartRef = doc(db, "cart", userId, "userCart", product.id);
-  await setDoc(cartRef, { ...product, quantity: 1 });
+  await setDoc(cartRef, { ...product, });
 };
 
 export const getCartItems = async (userId) => {
