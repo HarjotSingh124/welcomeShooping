@@ -85,6 +85,7 @@ import {
   orderBy,
   serverTimestamp,
   increment,
+  limit 
 } from "firebase/firestore";
 import { app } from "./config";
 

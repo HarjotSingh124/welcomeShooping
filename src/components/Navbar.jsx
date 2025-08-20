@@ -89,6 +89,8 @@ import { useState, useEffect } from "react";
 import { db } from "@/firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 
+import AccountDropdown from "../app/profile/AccountDropdown"; // Import Account Dropdown
+
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { cart } = useCart();
@@ -132,25 +134,9 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
-          {user ? (
-            <button
-              onClick={logout}
-              className="flex items-center text-black text-sm hover:text-red-600"
-            >
-              <LogOut className="w-5 h-5 mr-1" />
-              Logout
-            </button>
-          ) : (
-            <button
-              onClick={() => router.push("/login")}
-              className="flex items-center text-black text-sm hover:text-blue-600"
-            >
-              <LogIn className="w-5 h-5 mr-1" />
-              Login
-            </button>
-          )}
+           <AccountDropdown />
 
-          <Link href="/cart" className="relative text-black hover:text-blue-600">
+          <Link href="/cart" className=" flex justify-between relative text-black hover:text-blue-600">
             <ShoppingCart className="w-6 h-6" />
             {cartCount > 0 && (
               <span className="absolute -top-2 -right-3 bg-yellow-400 text-xs text-white px-1 rounded-full">

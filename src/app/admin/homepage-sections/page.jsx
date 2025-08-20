@@ -226,5 +226,5 @@ export default function HomepageSectionsAdmin() {
         </ul>
       </div>
     </div>
-  );
+  )
 }

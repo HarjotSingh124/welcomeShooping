@@ -8,7 +8,9 @@ import CategoryGrid from "@/components/CategoryGrid";
 import BannerSection from "@/components/BannerSection";
 import { useAuth } from "@/context/AuthContext"; // Import Auth Context
 import { useRouter } from "next/navigation"; // Use Next.js router for navigation
-import SkeletonLoader from "@/components/SkeletonLoader"; // New Loader Component
+import SkeletonLoader from "@/components/SkeletonLoader"; 
+import { getTopProducts } from "../firebase/products"; // Import function to fetch top products
+// New Loader Component
 
 export default function HomePage() {
   const [sections, setSections] = useState([]);
@@ -47,7 +49,6 @@ export default function HomePage() {
             if (sec.type === "hero") {
               return <HeroCarousel key={sec.id} images={sec.images || []} />;
             }
-
             if (sec.type === "banner") {
               return <BannerSection key={sec.id} image={sec.image} />;
             }
@@ -81,6 +82,7 @@ export default function HomePage() {
                 </div>
               );
             }
+     
 
             return null;
           })

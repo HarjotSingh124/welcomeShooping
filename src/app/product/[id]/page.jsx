@@ -12,6 +12,8 @@ import {
   checkStockByHandle,
   getRelatedByCategory,
 } from "@/firebase/products";
+import { doc, updateDoc, increment } from "firebase/firestore";
+import { db } from '@/firebase/config';
 
 export default function ProductDetailPage() {
   const { id } = useParams(); // product handle
@@ -29,6 +31,14 @@ export default function ProductDetailPage() {
   const [reviewLoading, setReviewLoading] = useState(true);
   const [newReview, setNewReview] = useState({ rating: 5, text: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
+
+const incrementViewCount = async (category, handle) => {
+  const productRef = doc(db, "categories", category, "products", handle);
+  await updateDoc(productRef, {
+    viewCount: increment(1),
+  });
+};
+
 
   useEffect(() => {
     if (!id) return;
@@ -182,18 +192,18 @@ export default function ProductDetailPage() {
           </div>
 
           <p className="text-sm text-gray-600">{product.type ? `Category: ${product.type}` : `Category: ${product.category || "N/A"}`}</p>
+{(product.stock === null || product.stock > 0) && (
+  <div className="flex items-center gap-3">
+    <div className="flex items-center border rounded">
+      <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="px-3 py-2">−</button>
+      <div className="px-4 py-2">{qty}</div>
+      <button onClick={() => setQty((q) => q + 1)} className="px-3 py-2">+</button>
+    </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center border rounded">
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="px-3 py-2">−</button>
-              <div className="px-4 py-2">{qty}</div>
-              <button onClick={() => setQty((q) => q + 1)} className="px-3 py-2">+</button>
-            </div>
-
-            <button onClick={handleAddToCart} className="px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded">Add to cart</button>
-            <button onClick={handleBuyNow} className="px-6 py-2 bg-[#BEB9B1] hover:opacity-90 text-white font-semibold rounded">Buy now</button>
-          </div>
-
+    <button onClick={handleAddToCart} className="px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded">Add to cart</button>
+    <button onClick={handleBuyNow} className="px-6 py-2 bg-[#BEB9B1] hover:opacity-90 text-white font-semibold rounded">Buy now</button>
+  </div>
+)}
           <ul className="mt-4 text-sm list-disc list-inside text-gray-600 space-y-1">
             <li>Easy returns within 10 days</li>
             <li>Secure payment</li>

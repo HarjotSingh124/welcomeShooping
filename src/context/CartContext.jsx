@@ -75,7 +75,7 @@ export const CartProvider = ({ children }) => {
       router.push("/login");
       return alert("Please login to add to cart");
     }
-    await addToCartDB(user.uid, product);
+    await addToCartDB(user.uid, product,);
     const updated = await getCartItems(user.uid);
     setCart(updated);
 
@@ -91,7 +91,7 @@ export const CartProvider = ({ children }) => {
 
   // Update Quantity
   const updateQuantity = async (id, qty) => {
-    await updateCartQuantity(user.uid, id, qty);
+    await updateCartQuantity(user.uid, id, qty || 1);
     const updated = await getCartItems(user.uid);
     setCart(updated);
   };

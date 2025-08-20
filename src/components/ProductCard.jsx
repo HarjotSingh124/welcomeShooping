@@ -1,12 +1,13 @@
-
-
-
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { useState } from "react";
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
+  product.quantity = 1;
+
 
   return (
     <div className="border rounded shadow hover:shadow-lg transition p-3 bg-white flex flex-col">
@@ -28,6 +29,7 @@ export default function ProductCard({ product }) {
         <p className="text-black font-bold mt-1 text-sm sm:text-base">
           ₹{product.price}
         </p>
+        
 
         {/* Tags */}
         {Array.isArray(product.tags) && product.tags.length > 0 && (
@@ -54,4 +56,3 @@ export default function ProductCard({ product }) {
     </div>
   );
 }
-
