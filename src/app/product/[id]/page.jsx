@@ -271,6 +271,7 @@ const incrementViewCount = async (category, handle) => {
           )}
         </aside>
       </div>
+     
 
       {/* Related */}
       {related.length > 0 && (

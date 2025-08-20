@@ -9,7 +9,7 @@ import BannerSection from "@/components/BannerSection";
 import { useAuth } from "@/context/AuthContext"; // Import Auth Context
 import { useRouter } from "next/navigation"; // Use Next.js router for navigation
 import SkeletonLoader from "@/components/SkeletonLoader"; 
-import { getTopProducts } from "../firebase/products"; // Import function to fetch top products
+import Footer, {footer} from "@/components/Footer"; // Import Footer component
 // New Loader Component
 
 export default function HomePage() {
@@ -89,10 +89,11 @@ export default function HomePage() {
         )}
 
         {/* Footer */}
-        <footer className="pt-10 pb-6 text-center text-sm text-gray-500 border-t mt-10">
-          © {new Date().getFullYear()} WelcomeShopping. All rights reserved.
-        </footer>
+
       </main>
+   
     </div>
+
+      
   );
 }
