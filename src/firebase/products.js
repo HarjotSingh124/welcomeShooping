@@ -132,6 +132,21 @@ export async function getActiveProductById(categoryId, productId) {
   return { id: snap.id, ...data, categoryId };
 }
 
+export const searchProducts = async (query) => {
+  const lower = query.toLowerCase();
+  const snapshot = await getDocs(collectionGroup(db, "products"));
+
+  return snapshot.docs
+    .map((doc) => ({ id: doc.id, ...doc.data() }))
+    .filter(
+      (item) =>
+        item.status === "active" &&
+        (item.title?.toLowerCase().includes(lower) ||
+         item.category?.toLowerCase().includes(lower))
+    );
+};
+
+
 /**
  * Top-level reviews collection helpers (fast and simple).
  * We store reviews in top-level "reviews" with field productId = product.handle || product.id
